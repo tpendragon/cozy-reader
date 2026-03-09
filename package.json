@@ -1,0 +1,15 @@
+{
+  "name": "cozy-reader",
+  "version": "1.0.0",
+  "description": "A cozy 3D reading room for IIIF manuscripts",
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "serve": "serve ."
+  },
+  "devDependencies": {
+    "vitest": "^2.0.0",
+    "serve": "^14.0.0"
+  }
+}

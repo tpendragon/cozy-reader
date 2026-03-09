@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cozy Reader</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      overflow: hidden;
+      background: #1a0f0a;
+      font-family: 'Georgia', serif;
+    }
+
+    #container {
+      width: 100vw;
+      height: 100vh;
+    }
+
+    #loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: radial-gradient(ellipse at center, #2a1810 0%, #0d0705 100%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: opacity 1.5s ease-out;
+    }
+
+    #loading-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loading-flame {
+      width: 60px;
+      height: 120px;
+      position: relative;
+      animation: flicker 0.5s ease-in-out infinite alternate;
+    }
+
+    .loading-flame::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 40px;
+      height: 80px;
+      background: radial-gradient(ellipse at bottom, #ff9d00 0%, #ff6600 40%, transparent 70%);
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      filter: blur(2px);
+    }
+
+    .loading-flame::after {
+      content: '';
+      position: absolute;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 50px;
+      background: radial-gradient(ellipse at bottom, #fffbe6 0%, #ffd700 50%, transparent 80%);
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      filter: blur(1px);
+    }
+
+    @keyframes flicker {
+      0% { transform: scale(1) rotate(-1deg); }
+      100% { transform: scale(1.05) rotate(1deg); }
+    }
+
+    .loading-text {
+      color: #c9a96e;
+      margin-top: 40px;
+      font-size: 1.2rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      opacity: 0.8;
+    }
+
+    #vr-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      padding: 12px 24px;
+      background: rgba(201, 169, 110, 0.2);
+      border: 1px solid #c9a96e;
+      color: #c9a96e;
+      font-family: 'Georgia', serif;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      z-index: 100;
+    }
+
+    #vr-button:hover {
+      background: rgba(201, 169, 110, 0.3);
+    }
+
+    #vr-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #instructions {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      color: #c9a96e;
+      font-size: 0.9rem;
+      opacity: 0.6;
+      z-index: 100;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading-overlay">
+    <div class="loading-flame"></div>
+    <div class="loading-text">Preparing your reading room...</div>
+  </div>
+
+  <div id="container"></div>
+
+  <div id="instructions">
+    Arrow keys to turn pages | Press Shift to lean in
+  </div>
+
+  <button id="vr-button" style="display: none;">Enter VR</button>
+
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
