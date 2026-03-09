@@ -268,12 +268,9 @@ async function loadTexture(book, imageIndex) {
 }
 
 function applyTexturesToPages(book) {
-  book.pages.forEach((page, physicalIdx) => {
-    // Physical page N has:
-    // - Front (visible on right): Image 2N
-    // - Back (visible on left when turned): Image 2N + 1
-    const frontImageIdx = physicalIdx * 2
-    const backImageIdx = physicalIdx * 2 + 1
+  book.pages.forEach((page) => {
+    const frontImageIdx = page.pageIndex * 2
+    const backImageIdx = page.pageIndex * 2 + 1
 
     const frontTex = book.textureCache.get(frontImageIdx)
     if (frontTex && page.frontMaterial.map !== frontTex) {
@@ -316,14 +313,33 @@ export function updateBook(book, delta) {
   preloadTextures(book, currentPhysicalPage * 2, 6)
 }
 
-function updatePage(book, page, pageIndex, delta) {
-  const pageCount = book.pages.length
+function updatePage(book, page, arrayIndex, delta) {
+  const maxMeshes = book.pages.length
+  const halfMeshes = Math.floor(maxMeshes / 2)
+  let indexChanged = false
+  
+  while (page.pageIndex - book.targetTurn < -halfMeshes && page.pageIndex + maxMeshes < book.physicalPageCount) {
+    page.pageIndex += maxMeshes
+    page.turnProgress = 0
+    indexChanged = true
+  }
 
-  // Calculate target turn progress for this page
+  while (page.pageIndex - book.targetTurn > halfMeshes && page.pageIndex - maxMeshes >= 0) {
+    page.pageIndex -= maxMeshes
+    page.turnProgress = 1
+    indexChanged = true
+  }
+
+  if (indexChanged) {
+    applyTexturesToSinglePage(book, page)
+  }
+
+  const pageIndex = page.pageIndex 
+  const pageCount = book.physicalPageCount 
+
   const turnTarget = smoothstep(pageIndex, pageIndex + 1, book.currentTurn)
   page.turnProgress = lerp(page.turnProgress, turnTarget, delta * 5)
 
-  // Snap to target when very close
   if (Math.abs(page.turnProgress - turnTarget) < 0.01) {
     page.turnProgress = turnTarget
   }
@@ -334,7 +350,6 @@ function updatePage(book, page, pageIndex, delta) {
   
   page.group.position.y = 0.001 + lerp(rightStackY, leftStackY, page.turnProgress)
 
-  // Apply rotation and fanning (leave your current applyPageDeformation as is!)
   applyPageDeformation(page, pageCount, pageIndex)
 }
 
@@ -368,7 +383,6 @@ function applyPageDeformation(page, pageCount, pageIndex) {
   const bendBones = 4
   const perBoneFlatten = flattenAngle / bendBones
 
-  // Active turning curl (peaks mid-air, drops to 0 when resting flat)
   const curlIntensity = Math.sin(turn * Math.PI) * 0.15
 
   for (let i = 0; i < boneCount; i++) {
@@ -378,19 +392,34 @@ function applyPageDeformation(page, pageCount, pageIndex) {
       // Root bone handles the main flip and fanning base
       rotation = spineRotation
     } else {
-      // 1. Apply mid-air droop
       const boneT = i / (boneCount - 1)
       rotation += curlIntensity * Math.sin(boneT * Math.PI)
 
-      // 2. Apply the resting flattening curve to the bones near the spine
       if (i <= bendBones) {
         rotation += perBoneFlatten
       }
     }
 
-    // Apply to both front and back skeletons
     bones[i].rotation.z = rotation
     backBones[i].rotation.z = rotation
+  }
+}
+
+async function applyTexturesToSinglePage(book, page) {
+  const frontImageIdx = page.pageIndex * 2
+  const backImageIdx = page.pageIndex * 2 + 1
+
+  const frontTex = await loadTexture(book, frontImageIdx)
+
+  if (frontTex && page.pageIndex * 2 === frontImageIdx) {
+    page.frontMaterial.map = frontTex
+    page.frontMaterial.needsUpdate = true
+  }
+
+  const backTex = await loadTexture(book, backImageIdx)
+  if (backTex && page.pageIndex * 2 + 1 === backImageIdx) {
+    page.backMaterial.map = backTex
+    page.backMaterial.needsUpdate = true
   }
 }
 
