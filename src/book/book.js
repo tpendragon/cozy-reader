@@ -21,9 +21,11 @@ function lerp(a, b, t) {
   return a + (b - a) * t
 }
 
-export async function createBook(scene, manifest, playPageTurn) {
+export async function createBook(scene, manifest, playPageTurn, initialPage = 0) {
   // Calculate number of physical pages (each has front and back)
   const physicalPageCount = Math.ceil(manifest.pages.length / 2)
+
+  const startPage = Math.max(0, Math.min(initialPage, physicalPageCount))
 
   const book = {
     group: new THREE.Group(),
@@ -34,8 +36,8 @@ export async function createBook(scene, manifest, playPageTurn) {
     totalImages: manifest.pages.length,
     openness: 1,
     targetOpenness: 1,
-    currentTurn: 0,      // Which page is currently being turned (0 to physicalPageCount)
-    targetTurn: 0,
+    currentTurn: startPage,
+    targetTurn: startPage,
     textureCache: new Map(),
     textureLoader: new THREE.TextureLoader(),
     playPageTurn: playPageTurn
@@ -43,7 +45,8 @@ export async function createBook(scene, manifest, playPageTurn) {
 
   createBookBase(book)
   createPages(book)
-  await preloadTextures(book, 0, 4)
+  const preloadStart = Math.max(0, startPage * 2 - 2)
+  await preloadTextures(book, preloadStart, 6)
 
   book.group.position.set(0, 0.82, 0.1)
   scene.add(book.group)
@@ -308,9 +311,10 @@ export function updateBook(book, delta) {
     updatePage(book, page, idx, delta)
   })
 
-  // Preload textures for upcoming pages
+  // Preload textures for nearby pages (behind and ahead)
   const currentPhysicalPage = Math.floor(book.targetTurn)
-  preloadTextures(book, currentPhysicalPage * 2, 6)
+  const preloadStart = Math.max(0, currentPhysicalPage * 2 - 2)
+  preloadTextures(book, preloadStart, 8)
 }
 
 function updatePage(book, page, arrayIndex, delta) {
@@ -436,6 +440,7 @@ export function nextPage(book) {
   if (book.targetTurn >= book.physicalPageCount) return
   book.playPageTurn()
   book.targetTurn += 1
+  syncPageToUrl(book)
 }
 
 export function prevPage(book) {
@@ -443,4 +448,15 @@ export function prevPage(book) {
   if (book.targetTurn <= 0) return
   book.playPageTurn()
   book.targetTurn -= 1
+  syncPageToUrl(book)
+}
+
+function syncPageToUrl(book) {
+  const url = new URL(window.location)
+  if (book.targetTurn === 0) {
+    url.searchParams.delete('page')
+  } else {
+    url.searchParams.set('page', book.targetTurn)
+  }
+  history.replaceState(null, '', url)
 }

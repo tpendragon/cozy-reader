@@ -73,7 +73,9 @@ class CozyReader {
 
     this.manifest = await fetchAndParseManifest(manifest)
 
-    this.book = await createBook(this.scene, this.manifest, playPageTurn)
+    const initialPage = parseInt(new URLSearchParams(window.location.search).get('page'), 10) || 0
+
+    this.book = await createBook(this.scene, this.manifest, playPageTurn, initialPage)
 
     setupMouseInteraction(this.camera, this.scene, this.book, this.renderer)
     setupVRInteraction(this.renderer, this.scene, this.book)
