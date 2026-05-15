@@ -28,6 +28,7 @@ class CozyReader {
     )
     this.camera.position.set(0, 1.6, 1.5)
     this.camera.lookAt(0, 0.8, 0)
+    this.adjustCameraForAspect()
 
     this.renderer = new THREE.WebGLRenderer({
       antialias: true,
@@ -129,9 +130,24 @@ class CozyReader {
     this.renderer.render(this.scene, this.camera)
   }
 
+  adjustCameraForAspect() {
+    const aspect = window.innerWidth / window.innerHeight
+    if (aspect < 1) {
+      // Portrait: increase vertical FOV to maintain horizontal coverage
+      // This ensures the book stays fully in view on narrow screens
+      const baseFovRad = (60 * Math.PI) / 180
+      const hFov = 2 * Math.atan(Math.tan(baseFovRad / 2) * (16 / 9))
+      const newFov = 2 * Math.atan(Math.tan(hFov / 2) / aspect) * (180 / Math.PI)
+      this.camera.fov = Math.min(newFov, 120)
+    } else {
+      this.camera.fov = 60
+    }
+    this.camera.updateProjectionMatrix()
+  }
+
   onResize() {
     this.camera.aspect = window.innerWidth / window.innerHeight
-    this.camera.updateProjectionMatrix()
+    this.adjustCameraForAspect()
     this.renderer.setSize(window.innerWidth, window.innerHeight)
   }
 }
