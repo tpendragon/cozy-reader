@@ -160,6 +160,13 @@ export function playPageTurn() {
   noise.start()
 }
 
+export function toggleMute() {
+  if (!masterGain) return false
+  const isMuted = masterGain.gain.value === 0
+  masterGain.gain.value = isMuted ? 0.3 : 0
+  return !isMuted // returns true if now muted
+}
+
 export function stopAmbience() {
   isPlaying = false
   if (fireNoise) {

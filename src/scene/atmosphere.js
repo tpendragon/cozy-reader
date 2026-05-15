@@ -1,4 +1,5 @@
 import * as THREE from 'three'
+import { isLeaningIn } from '../interaction/mouse.js'
 
 let dustParticles = null
 const particleCount = 200
@@ -40,6 +41,13 @@ export function createAtmosphere(scene) {
 
 export function updateAtmosphere(time) {
   if (!dustParticles) return
+
+  const targetOpacity = isLeaningIn ? 0 : 0.3
+  const current = dustParticles.material.opacity
+  dustParticles.material.opacity += (targetOpacity - current) * 0.05
+  dustParticles.visible = dustParticles.material.opacity > 0.005
+
+  if (!dustParticles.visible) return
 
   const positions = dustParticles.geometry.attributes.position.array
   const velocities = dustParticles.geometry.attributes.velocity.array

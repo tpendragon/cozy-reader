@@ -6,11 +6,11 @@ import { createDesk } from './scene/desk.js'
 import { createLighting, updateLighting } from './scene/lighting.js'
 import { createAtmosphere, updateAtmosphere } from './scene/atmosphere.js'
 import { createBook, updateBook } from './book/book.js'
-import { setupMouseInteraction } from './interaction/mouse.js'
+import { setupMouseInteraction, toggleLean } from './interaction/mouse.js'
 import { setupVRInteraction } from './interaction/vr.js'
 import { fetchAndParseManifest } from './iiif/loader.js'
 import { hideLoadingOverlay } from './loading/loading.js'
-import { initAudio, startAmbience, playPageTurn} from './audio/ambience.js'
+import { initAudio, startAmbience, playPageTurn, toggleMute } from './audio/ambience.js'
 
 const MANIFEST_URL = 'https://figgy.princeton.edu/concern/scanned_resources/cd460a0c-450f-4beb-8bd1-6d4ee3078d72/manifest'
 
@@ -82,9 +82,29 @@ class CozyReader {
     document.addEventListener('click', () => this.initAudioOnInteraction(), { once: true })
     document.addEventListener('keydown', () => this.initAudioOnInteraction(), { once: true })
 
+    this.setupUIButtons()
+
     hideLoadingOverlay()
 
     this.renderer.setAnimationLoop((time) => this.animate(time))
+  }
+
+  setupUIButtons() {
+    const soundBtn = document.getElementById('sound-toggle')
+    soundBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      this.initAudioOnInteraction()
+      const muted = toggleMute()
+      soundBtn.innerHTML = muted ? '&#x1f507;' : '&#x1f50a;'
+      soundBtn.classList.toggle('active', muted)
+    })
+
+    const leanBtn = document.getElementById('lean-toggle')
+    leanBtn.addEventListener('click', (e) => {
+      e.stopPropagation()
+      toggleLean()
+      leanBtn.classList.toggle('active')
+    })
   }
 
   initAudioOnInteraction() {

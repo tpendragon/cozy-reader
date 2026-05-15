@@ -123,6 +123,53 @@
       z-index: 100;
       pointer-events: none;
     }
+
+    .ui-button {
+      position: fixed;
+      z-index: 100;
+      width: 44px;
+      height: 44px;
+      background: rgba(201, 169, 110, 0.15);
+      border: 1px solid rgba(201, 169, 110, 0.4);
+      border-radius: 50%;
+      color: #c9a96e;
+      font-size: 1.2rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .ui-button:hover {
+      background: rgba(201, 169, 110, 0.3);
+    }
+
+    .ui-button.active {
+      background: rgba(201, 169, 110, 0.35);
+      border-color: #c9a96e;
+    }
+
+    #sound-toggle {
+      top: 20px;
+      right: 20px;
+    }
+
+    #lean-toggle {
+      bottom: 20px;
+      right: 80px;
+      display: none;
+    }
+
+    @media (pointer: coarse), (hover: none) {
+      #lean-toggle {
+        display: flex;
+      }
+      #instructions {
+        display: none;
+      }
+    }
   </style>
 </head>
 <body>
@@ -136,6 +183,9 @@
   <div id="instructions">
     Arrow keys to turn pages | Press Shift to lean in
   </div>
+
+  <button id="sound-toggle" class="ui-button" title="Toggle sound" aria-label="Toggle sound">&#x1f50a;</button>
+  <button id="lean-toggle" class="ui-button" title="Lean in to read" aria-label="Lean in to read">&#x1f50d;</button>
 
   <button id="vr-button" style="display: none;">Enter VR</button>
 

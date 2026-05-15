@@ -3,7 +3,7 @@ import { openBook, closeBook, nextPage, prevPage } from '../book/book.js'
 
 let camera, scene, book, renderer
 let raycaster, mouse
-let isLeaningIn = false
+export let isLeaningIn = false
 let leanProgress = 0
 const LEAN_SPEED = 2.5
 
@@ -33,6 +33,10 @@ export function setupMouseInteraction(cam, scn, bk, rnd) {
   document.addEventListener('keyup', onKeyUp)
 
   animate()
+}
+
+export function toggleLean() {
+  isLeaningIn = !isLeaningIn
 }
 
 function onMouseClick(event) {
