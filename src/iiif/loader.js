@@ -1,15 +1,8 @@
 import { parseManifest, getPageImageUrl } from './manifest.js'
 
 export async function fetchAndParseManifest(url) {
-  const response = await fetch(url)
-  const data = await response.json()
-
-  const parsed = parseManifest(data)
-
-  return {
-    ...parsed,
-    raw: data
-  }
+  const parsed = await parseManifest(url)
+  return parsed
 }
 
 export async function preloadImages(manifest, options = {}) {
