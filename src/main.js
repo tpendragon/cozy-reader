@@ -20,9 +20,10 @@ class CozyReader {
     this.scene.background = new THREE.Color(0x0a0604)
     this.scene.fog = new THREE.FogExp2(0x0a0604, 0.08)
 
+    const vp = this.getViewportSize()
     this.camera = new THREE.PerspectiveCamera(
       60,
-      window.innerWidth / window.innerHeight,
+      vp.width / vp.height,
       0.1,
       100
     )
@@ -34,7 +35,7 @@ class CozyReader {
       antialias: true,
       powerPreference: 'high-performance'
     })
-    this.renderer.setSize(window.innerWidth, window.innerHeight)
+    this.renderer.setSize(vp.width, vp.height)
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2))
     this.renderer.shadowMap.enabled = true
     this.renderer.shadowMap.type = THREE.PCFSoftShadowMap
@@ -81,6 +82,9 @@ class CozyReader {
     setupVRInteraction(this.renderer, this.scene, this.book)
 
     window.addEventListener('resize', () => this.onResize())
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', () => this.onResize())
+    }
 
     document.addEventListener('click', () => this.initAudioOnInteraction(), { once: true })
     document.addEventListener('keydown', () => this.initAudioOnInteraction(), { once: true })
@@ -132,8 +136,16 @@ class CozyReader {
     this.renderer.render(this.scene, this.camera)
   }
 
+  getViewportSize() {
+    if (window.visualViewport) {
+      return { width: window.visualViewport.width, height: window.visualViewport.height }
+    }
+    return { width: window.innerWidth, height: window.innerHeight }
+  }
+
   adjustCameraForAspect() {
-    const aspect = window.innerWidth / window.innerHeight
+    const vp = this.getViewportSize()
+    const aspect = vp.width / vp.height
     if (aspect < 1) {
       // Portrait: increase vertical FOV to maintain horizontal coverage
       // This ensures the book stays fully in view on narrow screens
@@ -148,9 +160,10 @@ class CozyReader {
   }
 
   onResize() {
-    this.camera.aspect = window.innerWidth / window.innerHeight
+    const vp = this.getViewportSize()
+    this.camera.aspect = vp.width / vp.height
     this.adjustCameraForAspect()
-    this.renderer.setSize(window.innerWidth, window.innerHeight)
+    this.renderer.setSize(vp.width, vp.height)
   }
 }
 
