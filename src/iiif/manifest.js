@@ -2,6 +2,8 @@ import { Vault } from '@iiif/helpers/vault'
 import { createPaintingAnnotationsHelper } from '@iiif/helpers/painting-annotations'
 import { getValue } from '@iiif/helpers/i18n'
 
+const MAX_SIZE = 1024
+
 let vault = null
 let paintingHelper = null
 
@@ -13,9 +15,9 @@ function getVault() {
   return { vault, paintingHelper }
 }
 
-export async function parseManifest(url) {
+export async function parseManifest(url, json) {
   const { vault, paintingHelper } = getVault()
-  const manifest = await vault.loadManifest(url)
+  const manifest = await vault.loadManifest(url, json)
 
   const canvases = vault.get(manifest.items)
 
@@ -51,19 +53,15 @@ export function getPageCount(parsed) {
 }
 
 export function getPageImageUrl(page, options = {}) {
-  const { size, width, height } = options
+  const { size, width, height, maxSize = MAX_SIZE } = options
 
   // If we have a IIIF image service, construct a URL from it
   if (page.serviceUrl) {
     let sizeParam
     if (size === 'full') {
       sizeParam = 'full'
-    } else if (width) {
-      sizeParam = `${width},`
-    } else if (height) {
-      sizeParam = `,${height}`
     } else {
-      sizeParam = 'full'
+      sizeParam = `${pixelWidth(page, width, height, maxSize)},`
     }
 
     return `${page.serviceUrl}/full/${sizeParam}/0/default.jpg`
@@ -71,4 +69,24 @@ export function getPageImageUrl(page, options = {}) {
 
   // Fall back to the static image URL
   return page.imageUrl
+}
+
+// Get the aspect ratio ourselves so we can support level 1.
+function pixelWidth(page, width, height, maxSize) {
+  const aspect = page.width / page.height
+  let w = width
+
+  if (!w && height && aspect) {
+    w = height * aspect
+  }
+  if (!w) {
+    w = maxSize
+  }
+
+  w = Math.min(w, maxSize)
+  if (aspect) {
+    w = Math.min(w, maxSize * aspect)
+  }
+
+  return Math.max(1, Math.round(w))
 }

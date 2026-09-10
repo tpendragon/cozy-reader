@@ -253,7 +253,7 @@ async function loadTexture(book, imageIndex) {
   if (imageIndex < 0 || imageIndex >= book.totalImages) return null
   if (book.textureCache.has(imageIndex)) return book.textureCache.get(imageIndex)
 
-  const url = getPageImageUrl(book.manifest.pages[imageIndex], { height: 1200 })
+  const url = getPageImageUrl(book.manifest.pages[imageIndex], { height: 1024 })
 
   try {
     const texture = await new Promise((resolve, reject) => {
